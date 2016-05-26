@@ -70,13 +70,16 @@ def run_get_output(cmd, chk_err=True, log_cmd=True):
     Wrapper for subprocess.check_output.
     Execute 'cmd'.  Returns return code and STDOUT, trapping expected exceptions.
     Reports exceptions to Error if chk_err parameter is True
+
+    Like subprocess.check_output, this function is able to accept a cmd typed as
+    a list or a tuple.
     """
     if log_cmd:
         logger.verb(u"run cmd '{0}'", cmd)
     try:
         output=subprocess.check_output(cmd,stderr=subprocess.STDOUT,shell=True)
         output = text(output, encoding='utf-8', errors="backslashreplace")
-    except subprocess.CalledProcessError as e :
+    except subprocess.CalledProcessError as e:
         output = text(e.output, encoding='utf-8', errors="backslashreplace")
         if chk_err:
             if log_cmd:
@@ -85,5 +88,22 @@ def run_get_output(cmd, chk_err=True, log_cmd=True):
             logger.error(u"Result:{0}", output)
         return e.returncode, output 
     return 0, output
+
+def quote(wordList):
+    """
+    Quote a list or tuple of strings for Unix Shell as words, using the
+    byte-literal single quote.
+
+    The resulting string is safe for use with ``shell=True`` in ``subprocess``,
+    and in ``os.system``.
+    ``assert shlex.split(ShellQuote(wordList)) == wordList``.
+
+    See also: POSIX.1:2013 Vol 3, Chap 2, Sec 2.2.2.
+    """
+    if not isinstance(wordList, (tuple, list)):
+        wordList = (wordList,)
+
+    return u" ".join(u"'{0}'".format(u"{0}".format(s).replace("'","'\\''")
+                                     for s in wordList))
 
 #End shell command util functions

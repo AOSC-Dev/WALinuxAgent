@@ -26,6 +26,7 @@ import unittest
 import os
 import azurelinuxagent.utils.shellutil as shellutil
 import test
+import shlex
 from azurelinuxagent.future import text
 
 class TestrunCmd(unittest.TestCase):
@@ -39,6 +40,11 @@ class TestrunCmd(unittest.TestCase):
             
         err = shellutil.run_get_output(u"ls 我")
         self.assertNotEquals(0, err[0])
+
+class TestShQuote(unittest.TestCase):
+    def test_quote_shlex(self):
+        test = ["a'b\\c", "\n\n\t\033[1m''\\\r"]
+	self.assertEquals(test, shlex.split(shellutil.quote(test))
 
 if __name__ == '__main__':
     unittest.main()
